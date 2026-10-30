@@ -1,6 +1,6 @@
 'use client'
 
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, ArrowRight, Check, Search, Mail, MessageCircle, Copy, Clock, CalendarDays } from 'lucide-react'
 import Logo from '../components/Logo.jsx'
@@ -77,6 +77,10 @@ export default function EnrollPage({ initialCourse }) {
   const [errors, setErrors] = useState({})
   const [done, setDone] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
+  const [reference, setReference] = useState('')
+  const startedAt = useRef(0)
   const [form, setForm] = useState({
     course: preselected?.slug ?? '',
     name: '',
@@ -90,7 +94,12 @@ export default function EnrollPage({ initialCourse }) {
     ref: '',
     remarks: '',
     agree: false,
+    website: '', // honeypot
   })
+
+  useEffect(() => {
+    startedAt.current = Date.now()
+  }, [])
 
   const emailLink = contactLinks.find((l) => l.icon === 'mail')
   const whatsappLink = contactLinks.find((l) => l.icon === 'chat')
@@ -146,14 +155,46 @@ export default function EnrollPage({ initialCourse }) {
     if (!Object.keys(e).length) go(3)
   }
 
-  const complete = () => {
+  // Complete: server ma save garne
+  const complete = async () => {
     if (!form.agree) {
       setErrors({ agree: 'Please accept the Terms & Conditions to continue.' })
       return
     }
     setErrors({})
-    setCopied(false)
-    setDone(true)
+    setSubmitError('')
+    setSubmitting(true)
+    try {
+      const res = await fetch('/api/enroll', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          course: form.course,
+          name: form.name,
+          email: form.email,
+          mobile: form.mobile.replace(/\s/g, ''),
+          address: form.address,
+          college: form.college,
+          otherCourse: form.otherCourse,
+          method: form.method,
+          amount: Number(form.amount),
+          ref: form.ref,
+          remarks: form.remarks,
+          agree: form.agree,
+          website: form.website,
+          startedAt: startedAt.current,
+        }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error ?? 'Something went wrong. Please try again.')
+      setReference(data.reference ?? '')
+      setCopied(false)
+      setDone(true)
+    } catch (err) {
+      setSubmitError(err.message)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   // Course chooser khulda Escape le banda garne, ra pachhadi ko page scroll nagarne
@@ -184,29 +225,22 @@ export default function EnrollPage({ initialCourse }) {
     }
   }, [done])
 
-  const message = [
-    'Enrollment request',
+  // Payment screenshot pathaune message (reference sahit)
+  const proofMessage = [
+    `Payment proof for enrollment ${reference}`,
+    `Name: ${form.name}`,
     `Course: ${selected?.title ?? ''}`,
-    `Full name: ${form.name}`,
-    `Email: ${form.email}`,
-    `Mobile: +977 ${form.mobile}`,
-    `Address: ${form.address}`,
-    `College: ${form.college || '-'}`,
-    `Other course: ${form.otherCourse || '-'}`,
-    '',
-    `Payment method: ${method?.label ?? ''}`,
     `Amount: ${npr(Number(form.amount) || 0)}`,
     `Transaction ID: ${form.ref || '-'}`,
-    `Remarks: ${form.remarks || '-'}`,
   ].join('\n')
 
   const emailHref = emailLink
-    ? `${emailLink.href}?subject=${encodeURIComponent(`Enrollment: ${selected?.title ?? ''}`)}&body=${encodeURIComponent(message)}`
+    ? `${emailLink.href}?subject=${encodeURIComponent(`Payment proof ${reference}`)}&body=${encodeURIComponent(proofMessage)}`
     : null
-  const whatsappHref = whatsappLink ? `${whatsappLink.href}?text=${encodeURIComponent(message)}` : null
+  const whatsappHref = whatsappLink ? `${whatsappLink.href}?text=${encodeURIComponent(proofMessage)}` : null
 
-  const copyDetails = () => {
-    navigator.clipboard?.writeText(message).then(() => setCopied(true))
+  const copyReference = () => {
+    navigator.clipboard?.writeText(reference).then(() => setCopied(true))
   }
 
   const filtered = courses.filter((c) => c.title.toLowerCase().includes(query.trim().toLowerCase()))
@@ -445,8 +479,8 @@ export default function EnrollPage({ initialCourse }) {
                           <input id="ref" name="ref" value={form.ref} onChange={update} className={fieldClass} placeholder="Enter your transaction ID" />
                         </Field>
                         <p className="rounded-lg border border-line bg-soft p-4 text-sm">
-                          After you submit, please also send a screenshot of your payment in the same email or WhatsApp chat.
-                          This website cannot upload files yet.
+                          After you submit, please also send a screenshot of your payment on WhatsApp or email. This website
+                          cannot upload files yet.
                         </p>
                       </>
                     )}
@@ -496,6 +530,12 @@ export default function EnrollPage({ initialCourse }) {
                     </div>
                   </div>
 
+                  {/* Honeypot: manche le dekhdaina, bot le bharchha */}
+                  <div className="absolute -left-[9999px] h-0 w-0 overflow-hidden" aria-hidden="true">
+                    <label htmlFor="website">Leave this field empty</label>
+                    <input id="website" name="website" tabIndex={-1} autoComplete="off" value={form.website} onChange={update} />
+                  </div>
+
                   <div className="mt-6">
                     <label className="flex items-start gap-3 text-sm">
                       <input
@@ -519,14 +559,35 @@ export default function EnrollPage({ initialCourse }) {
                     )}
                   </div>
 
+                  {submitError && (
+                    <p role="alert" className="mt-5 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700">
+                      {submitError}
+                    </p>
+                  )}
+
                   <div className="mt-8 flex gap-3">
-                    <button type="button" onClick={() => go(2)} className={ghostBtn}>
+                    <button type="button" onClick={() => go(2)} disabled={submitting || Boolean(reference)} className={`${ghostBtn} disabled:opacity-50`}>
                       Back
                     </button>
-                    <button type="button" onClick={complete} className={primaryBtn}>
-                      Complete <ArrowRight size={18} aria-hidden="true" />
+                    <button
+                      type="button"
+                      onClick={complete}
+                      disabled={submitting || Boolean(reference)}
+                      className={`${primaryBtn} disabled:cursor-not-allowed disabled:opacity-60`}
+                    >
+                      {submitting ? 'Submitting...' : reference ? 'Submitted' : 'Complete'}
+                      {!submitting && !reference && <ArrowRight size={18} aria-hidden="true" />}
                     </button>
                   </div>
+
+                  {reference && (
+                    <p className="mt-4 text-sm">
+                      Your reference code is <strong className="text-forest">{reference}</strong>.{' '}
+                      <button type="button" onClick={() => setDone(true)} className="font-semibold text-brand underline">
+                        View next steps
+                      </button>
+                    </p>
+                  )}
                 </div>
               )}
             </div>
@@ -684,7 +745,7 @@ export default function EnrollPage({ initialCourse }) {
         </div>
       )}
 
-      {/* Popup */}
+      {/* Popup: request save bhayepachhi */}
       {done && (
         <div
           className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4"
@@ -702,35 +763,47 @@ export default function EnrollPage({ initialCourse }) {
               <Check size={28} aria-hidden="true" />
             </span>
             <h2 id="enroll-done-title" className="mt-5 text-2xl font-bold">
-              Enrollment request ready
+              Enrollment request received
             </h2>
-            <p className="mt-3 text-sm">
-              Your details are ready. Press a button below, then press <strong>send</strong> in your email or WhatsApp app to
-              submit your request. Our team will confirm your seat after checking your payment.
+
+            {reference && (
+              <div className="mt-4 rounded-xl border border-line bg-soft p-4">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted">Your reference code</p>
+                <p className="mt-1 font-heading text-2xl font-bold tracking-wider text-forest">{reference}</p>
+                <button
+                  type="button"
+                  onClick={copyReference}
+                  className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-brand hover:underline"
+                >
+                  <Copy size={14} aria-hidden="true" /> {copied ? 'Copied' : 'Copy code'}
+                </button>
+              </div>
+            )}
+
+            <p className="mt-4 text-sm">
+              Thank you, {form.name.split(' ')[0] || 'there'}. We have saved your request. Our team will contact you to confirm your
+              seat and payment. Please keep your reference code.
             </p>
             {payNow && (
-              <p className="mt-3 text-sm">If you have already paid, please also send your payment screenshot in the same chat or email.</p>
+              <p className="mt-3 text-sm">
+                If you have paid, please send a screenshot of your payment on WhatsApp or email, quoting your reference code.
+              </p>
             )}
 
             <div className="mt-6 flex flex-col gap-3">
-              {emailHref && (
-                <a href={emailHref} className={primaryBtn}>
-                  <Mail size={16} aria-hidden="true" /> Send by Email
+              {payNow && whatsappHref && (
+                <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className={primaryBtn}>
+                  <MessageCircle size={16} aria-hidden="true" /> Send payment proof on WhatsApp
                 </a>
               )}
-              {whatsappHref && (
-                <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className={emailHref ? ghostBtn : primaryBtn}>
-                  <MessageCircle size={16} aria-hidden="true" /> Send on WhatsApp
+              {payNow && emailHref && (
+                <a href={emailHref} className={ghostBtn}>
+                  <Mail size={16} aria-hidden="true" /> Send payment proof by email
                 </a>
               )}
-              {!emailHref && !whatsappHref && (
-                <p className="rounded-lg border border-line bg-soft p-4 text-sm">
-                  Our email and WhatsApp details are not set up yet. Please copy your details and contact us directly.
-                </p>
-              )}
-              <button type="button" onClick={copyDetails} className={ghostBtn}>
-                <Copy size={16} aria-hidden="true" /> {copied ? 'Copied' : 'Copy details'}
-              </button>
+              <Link href="/" className={payNow ? ghostBtn : primaryBtn}>
+                Back to home
+              </Link>
               <button type="button" onClick={() => setDone(false)} className="text-sm font-semibold text-muted hover:text-forest">
                 Close
               </button>
