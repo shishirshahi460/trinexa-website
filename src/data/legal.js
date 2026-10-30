@@ -12,7 +12,7 @@ export const legal = {
       },
       {
         title: 'How the contact form works',
-        text: 'This website does not store form messages on a server. The form opens your email app or WhatsApp with your message ready, and the message is sent only when you press send there. It is then handled by your email or WhatsApp provider as well as by us.',
+        text: 'When you submit the contact form, your details are sent to our server and stored in our database so that we can reply to you. We may also receive them by email. We keep a one-way scrambled (hashed) version of your IP address, only to limit spam. We do not sell your information.',
       },
       {
         title: 'How we use your information',
