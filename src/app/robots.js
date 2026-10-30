@@ -2,7 +2,7 @@ const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000').repla
 
 export default function robots() {
   return {
-    rules: { userAgent: '*', allow: '/', disallow: ['/enroll'] },
+    rules: { userAgent: '*', allow: '/', disallow: ['/enroll', '/admin', '/api/'] },
     sitemap: `${base}/sitemap.xml`,
   }
 }
