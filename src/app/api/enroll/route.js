@@ -4,8 +4,8 @@ import { connectDB } from '@/lib/db'
 import Enrollment from '@/models/Enrollment'
 import { enrollSchema } from '@/lib/validators'
 import { sendNotification } from '@/lib/mailer'
+import { courses } from '@/data/academyCourses'
 import { getCourseTerms } from '@/lib/courseTerms'
-import { courseTerms } from '@/data/courseFees'
 import { paymentGroups } from '@/data/payment'
 
 export const runtime = 'nodejs'
@@ -50,7 +50,6 @@ export async function POST(request) {
   if (!course || !method) {
     return NextResponse.json({ error: 'Please choose a valid course and payment method.' }, { status: 400 })
   }
-  const expectedFee = (await getCourseTerms())[course.slug]?.fee?.offer
 
   const ip = (request.headers.get('x-forwarded-for') ?? '').split(',')[0].trim() || 'unknown'
   const ipHash = hashIp(ip)
@@ -66,6 +65,14 @@ export async function POST(request) {
         { error: 'Too many requests. Please wait a few minutes and try again.' },
         { status: 429 },
       )
+    }
+
+    // Abhako sahi (offer) fee: database ko value, nabhaye code ko default
+    let expectedFee
+    try {
+      expectedFee = (await getCourseTerms())[course.slug]?.fee?.offer
+    } catch (err) {
+      console.error('Could not read course fee:', err.message)
     }
 
     // Reference code banaune (duplicate bhayo bhane pheri try)
