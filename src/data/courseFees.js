@@ -1,8 +1,6 @@
-// Course ko duration, offer price, batch ra photo yaha edit garnus.
-// original = regular price, offer = abhako offer price.
+// Yo file ma DEFAULT value chha. Real value admin (/admin/courses) bata badalinchha.
 export const offer = {
   label: 'Limited-time offer',
-  ends: null, // jastai 'Poush 30' lekhyo bhane "Valid until Poush 30" dekhinchha
 }
 
 export const npr = (n) => `NPR ${n.toLocaleString('en-US')}`
@@ -44,18 +42,22 @@ export const courseImages = {
   seo: `${dir}/seo.jpg`,
 }
 
-// Real batch tay bhayepachhi yaha halnus (khali bhaye "dates not announced" dekhinchha).
-// Udaharan:
-// python: [
-//   { date: '15 Jan 2027', times: ['07:00 AM - 08:30 AM', '05:00 PM - 06:30 PM'] },
-//   { date: '01 Feb 2027', times: ['07:00 AM - 08:30 AM'] },
-// ],
+// Default batch (khali): real batch admin bata halnus
 export const courseBatches = {}
 
-// Course ma duration, fee, photo ra batch jodne
-export const withTerms = (course) => ({
-  ...course,
-  ...courseTerms[course.slug],
-  image: courseImages[course.slug] ?? course.image,
-  batches: courseBatches[course.slug] ?? [],
-})
+// Course ma duration, fee, photo ra batch jodne.
+// terms = server bata aayeko (database ko) value; nabhaye yo file ko default.
+export const withTerms = (course, terms) => {
+  const t = terms?.[course.slug] ?? {
+    ...courseTerms[course.slug],
+    batches: courseBatches[course.slug] ?? [],
+  }
+  return {
+    ...course,
+    duration: t.duration,
+    fee: t.fee,
+    offerEnds: t.offerEnds ?? null,
+    batches: t.batches ?? [],
+    image: courseImages[course.slug] ?? course.image,
+  }
+}

@@ -1,10 +1,10 @@
 'use client'
+
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Clock, ChevronDown, Quote } from 'lucide-react'
 import PhotoBox from '../components/PhotoBox.jsx'
 import PriceTag from '../components/PriceTag.jsx'
-
 import { courses } from '../data/academyCourses.js'
 import { courseExtras } from '../data/courseDetails.js'
 import { withTerms, offer, npr } from '../data/courseFees.js'
@@ -51,10 +51,10 @@ function Bullets({ items }) {
   )
 }
 
-export default function CourseDetailPage({ slug }) {
-  
+export default function CourseDetailPage({ slug, terms }) {
   const found = courses.find((c) => c.slug === slug)
-  const course = found ? withTerms(found) : null
+  const course = found ? withTerms(found, terms) : null
+  const hasOffer = Boolean(course?.fee && course.fee.offer < course.fee.original)
   const extra = course ? courseExtras[course.slug] ?? {} : {}
   const testimonials = extra.testimonials ?? []
   const stories = extra.stories ?? []
@@ -88,7 +88,7 @@ export default function CourseDetailPage({ slug }) {
     return () => io.disconnect()
   }, [slug, tabs.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!course) return <NotFound />
+  if (!course) return null
 
   const goTo = (id) => {
     setActive(id)
@@ -102,7 +102,9 @@ export default function CourseDetailPage({ slug }) {
   const feeFaq = {
     q: 'What is the course fee?',
     a: course.fee
-      ? `The current offer fee is ${npr(course.fee.offer)} (regular price ${npr(course.fee.original)}) for a ${course.duration} course. This is a limited-time offer.`
+      ? hasOffer
+        ? `The current offer fee is ${npr(course.fee.offer)} (regular price ${npr(course.fee.original)}) for a ${course.duration} course. This is a limited-time offer${course.offerEnds ? `, valid until ${course.offerEnds}` : ''}.`
+        : `The course fee is ${npr(course.fee.original)} for a ${course.duration} course.`
       : 'Fees are shared when you enquire.',
   }
   const faqs = [...(extra.faqs ?? defaultFaqs(course)), feeFaq]
@@ -119,7 +121,7 @@ export default function CourseDetailPage({ slug }) {
   const related = (extra.related
     ? extra.related.map((s) => courses.find((c) => c.slug === s)).filter(Boolean)
     : courses.filter((c) => c.slug !== course.slug).slice(0, 3)
-  ).map(withTerms)
+  ).map((c) => withTerms(c, terms))
 
   return (
     <>
@@ -142,8 +144,8 @@ export default function CourseDetailPage({ slug }) {
             {course.fee && (
               <div className="mt-6">
                 <p className="text-xs font-semibold uppercase tracking-wider text-brand">
-                  {offer.label}
-                  {offer.ends ? ` · Valid until ${offer.ends}` : ''}
+                  {hasOffer ? offer.label : 'Course fee'}
+                  {hasOffer && course.offerEnds ? ` · Valid until ${course.offerEnds}` : ''}
                 </p>
                 <div className="mt-2 flex flex-wrap items-center gap-x-6 gap-y-3">
                   {course.duration && (

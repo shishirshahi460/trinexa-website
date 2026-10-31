@@ -2,7 +2,10 @@ import { notFound } from 'next/navigation'
 import CourseDetailPage from '@/views/CourseDetailPage'
 import { courses } from '@/data/academyCourses'
 import { withTerms } from '@/data/courseFees'
+import { getCourseTerms } from '@/lib/courseTerms'
 import { short } from '@/lib/seo'
+
+export const revalidate = 300
 
 export function generateStaticParams() {
   return courses.map((c) => ({ slug: c.slug }))
@@ -25,5 +28,6 @@ export async function generateMetadata({ params }) {
 export default async function Page({ params }) {
   const { slug } = await params
   if (!courses.some((c) => c.slug === slug)) notFound()
-  return <CourseDetailPage slug={slug} />
+  const terms = await getCourseTerms()
+  return <CourseDetailPage slug={slug} terms={terms} />
 }

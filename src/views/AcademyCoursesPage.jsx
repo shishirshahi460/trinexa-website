@@ -7,9 +7,9 @@ import { institutions as inst, courses as baseCourses } from '../data/academyCou
 import { withTerms, offer } from '../data/courseFees.js'
 import { contactInfo } from '../config/site.js'
 
-const courses = baseCourses.map(withTerms)
+export default function AcademyCoursesPage({ terms }) {
+  const courses = baseCourses.map((c) => withTerms(c, terms))
 
-export default function AcademyCoursesPage() {
   return (
     <>
       {/* Hero: left ma text, right ma photo */}
@@ -116,47 +116,50 @@ export default function AcademyCoursesPage() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <SectionTitle
             title={inst.coursesTitle}
-            text="Practical IT and digital skills courses, now at limited-time offer prices."
+            text="Practical IT and digital skills courses from TRINEXA Academy."
           />
           <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {courses.map((c) => (
-              <li key={c.slug}>
-                <Link
-                  href={`/academy/courses/${c.slug}`}
-                  className="group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-white transition hover:-translate-y-0.5 hover:border-brand hover:shadow-lg"
-                >
-                  <div className="relative">
-                    <PhotoBox src={c.image} alt={c.title} icon={c.icon} className="aspect-[16/10]" />
-                    {c.fee && (
-                      <span className="absolute left-3 top-3 rounded-full bg-brand px-3 py-1 text-xs font-bold text-white shadow">
-                        {offer.label}
-                      </span>
-                    )}
-                  </div>
+            {courses.map((c) => {
+              const hasOffer = c.fee && c.fee.offer < c.fee.original
+              return (
+                <li key={c.slug}>
+                  <Link
+                    href={`/academy/courses/${c.slug}`}
+                    className="group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-white transition hover:-translate-y-0.5 hover:border-brand hover:shadow-lg"
+                  >
+                    <div className="relative">
+                      <PhotoBox src={c.image} alt={c.title} icon={c.icon} className="aspect-[16/10]" />
+                      {hasOffer && (
+                        <span className="absolute left-3 top-3 rounded-full bg-brand px-3 py-1 text-xs font-bold text-white shadow">
+                          {offer.label}
+                        </span>
+                      )}
+                    </div>
 
-                  <span className="flex flex-1 flex-col p-5">
-                    <span className="text-lg font-bold text-forest">{c.title}</span>
-                    <span className="mt-2 line-clamp-3 flex-1 text-sm">{c.summary}</span>
+                    <span className="flex flex-1 flex-col p-5">
+                      <span className="text-lg font-bold text-forest">{c.title}</span>
+                      <span className="mt-2 line-clamp-3 flex-1 text-sm">{c.summary}</span>
 
-                    {c.duration && (
-                      <span className="mt-4 flex items-center gap-2 text-sm text-muted">
-                        <Clock size={16} className="text-brand" aria-hidden="true" />
-                        {c.duration}
-                      </span>
-                    )}
-                    {c.fee && (
-                      <span className="mt-2 block">
-                        <PriceTag fee={c.fee} />
-                      </span>
-                    )}
+                      {c.duration && (
+                        <span className="mt-4 flex items-center gap-2 text-sm text-muted">
+                          <Clock size={16} className="text-brand" aria-hidden="true" />
+                          {c.duration}
+                        </span>
+                      )}
+                      {c.fee && (
+                        <span className="mt-2 block">
+                          <PriceTag fee={c.fee} />
+                        </span>
+                      )}
 
-                    <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand">
-                      View course <ArrowRight size={14} aria-hidden="true" />
+                      <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand">
+                        View course <ArrowRight size={14} aria-hidden="true" />
+                      </span>
                     </span>
-                  </span>
-                </Link>
-              </li>
-            ))}
+                  </Link>
+                </li>
+              )
+            })}
           </ul>
         </div>
       </section>

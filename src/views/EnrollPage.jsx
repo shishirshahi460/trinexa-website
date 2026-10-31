@@ -1,6 +1,6 @@
 'use client'
 
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, ArrowRight, Check, Search, Mail, MessageCircle, Copy, Clock, CalendarDays } from 'lucide-react'
 import Logo from '../components/Logo.jsx'
@@ -10,7 +10,6 @@ import { withTerms, npr } from '../data/courseFees.js'
 import { minAmount, paymentGroups } from '../data/payment.js'
 import { contactLinks } from '../config/site.js'
 
-const courses = baseCourses.map(withTerms)
 const allMethods = paymentGroups.flatMap((g) => g.methods)
 const stepLabels = ['Enroll Form', 'Payment Method', 'Review Details']
 
@@ -67,7 +66,8 @@ function Row({ label, value }) {
   )
 }
 
-export default function EnrollPage({ initialCourse }) {
+export default function EnrollPage({ initialCourse, terms }) {
+  const courses = useMemo(() => baseCourses.map((c) => withTerms(c, terms)), [terms])
   const preselected = courses.find((c) => c.slug === initialCourse)
 
   const [step, setStep] = useState(1)

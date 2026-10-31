@@ -1,4 +1,5 @@
 import EnrollPage from '@/views/EnrollPage'
+import { getCourseTerms } from '@/lib/courseTerms'
 
 export const metadata = {
   title: 'Enroll Now',
@@ -9,5 +10,6 @@ export const metadata = {
 
 export default async function Page({ searchParams }) {
   const { course } = await searchParams
-  return <EnrollPage initialCourse={typeof course === 'string' ? course : ''} />
+  const terms = await getCourseTerms()
+  return <EnrollPage initialCourse={typeof course === 'string' ? course : ''} terms={terms} />
 }

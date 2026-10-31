@@ -4,7 +4,7 @@ import { connectDB } from '@/lib/db'
 import Enrollment from '@/models/Enrollment'
 import { enrollSchema } from '@/lib/validators'
 import { sendNotification } from '@/lib/mailer'
-import { courses } from '@/data/academyCourses'
+import { getCourseTerms } from '@/lib/courseTerms'
 import { courseTerms } from '@/data/courseFees'
 import { paymentGroups } from '@/data/payment'
 
@@ -50,7 +50,7 @@ export async function POST(request) {
   if (!course || !method) {
     return NextResponse.json({ error: 'Please choose a valid course and payment method.' }, { status: 400 })
   }
-  const expectedFee = courseTerms[course.slug]?.fee?.offer
+  const expectedFee = (await getCourseTerms())[course.slug]?.fee?.offer
 
   const ip = (request.headers.get('x-forwarded-for') ?? '').split(',')[0].trim() || 'unknown'
   const ipHash = hashIp(ip)
