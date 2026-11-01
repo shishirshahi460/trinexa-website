@@ -11,6 +11,7 @@ const links = [
   ['/admin', 'Dashboard'],
   ['/admin/courses', 'Courses'],
   ['/admin/blog', 'Blog'],
+  ['/admin/export', 'Export'],
 ]
 
 export default async function AdminLayout({ children }) {
@@ -20,12 +21,12 @@ export default async function AdminLayout({ children }) {
     <>
       {admin && (
         <nav aria-label="Admin" className="border-b border-line bg-white">
-          <div className="mx-auto flex max-w-6xl gap-6 px-4 text-sm font-semibold sm:px-6">
+          <div className="mx-auto flex max-w-6xl gap-6 overflow-x-auto px-4 text-sm font-semibold sm:px-6">
             {links.map(([href, label]) => (
               <Link
                 key={href}
                 href={href}
-                className="border-b-2 border-transparent py-3 text-body hover:border-brand hover:text-brand"
+                className="whitespace-nowrap border-b-2 border-transparent py-3 text-body hover:border-brand hover:text-brand"
               >
                 {label}
               </Link>
