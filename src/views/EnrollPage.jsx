@@ -4,6 +4,7 @@ import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, ArrowRight, Check, Search, Mail, MessageCircle, Copy, Clock, CalendarDays } from 'lucide-react'
 import Logo from '../components/Logo.jsx'
+import ProofUpload from './ProofUpload.jsx'
 import PriceTag from '../components/PriceTag.jsx'
 import { courses as baseCourses } from '../data/academyCourses.js'
 import { withTerms, npr } from '../data/courseFees.js'
@@ -79,7 +80,8 @@ export default function EnrollPage({ initialCourse, terms }) {
   const [copied, setCopied] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
-  const [reference, setReference] = useState('')
+    const [reference, setReference] = useState('')
+  const [proofToken, setProofToken] = useState('')
   const startedAt = useRef(0)
   const [form, setForm] = useState({
     course: preselected?.slug ?? '',
@@ -188,6 +190,7 @@ export default function EnrollPage({ initialCourse, terms }) {
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error ?? 'Something went wrong. Please try again.')
       setReference(data.reference ?? '')
+      setProofToken(data.proofToken ?? '')
       setCopied(false)
       setDone(true)
     } catch (err) {
@@ -479,8 +482,7 @@ export default function EnrollPage({ initialCourse, terms }) {
                           <input id="ref" name="ref" value={form.ref} onChange={update} className={fieldClass} placeholder="Enter your transaction ID" />
                         </Field>
                         <p className="rounded-lg border border-line bg-soft p-4 text-sm">
-                          After you submit, please also send a screenshot of your payment on WhatsApp or email. This website
-                          cannot upload files yet.
+                          After you submit, please also send a screenshot of your payment on WhatsApp or email.
                         </p>
                       </>
                     )}
@@ -789,6 +791,8 @@ export default function EnrollPage({ initialCourse, terms }) {
                 If you have paid, please send a screenshot of your payment on WhatsApp or email, quoting your reference code.
               </p>
             )}
+
+            {reference && proofToken && <ProofUpload reference={reference} token={proofToken} />}
 
             <div className="mt-6 flex flex-col gap-3">
               {payNow && whatsappHref && (

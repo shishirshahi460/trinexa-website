@@ -4,6 +4,7 @@ import { connectDB } from '@/lib/db'
 import Enrollment from '@/models/Enrollment'
 import { enrollSchema } from '@/lib/validators'
 import { sendNotification } from '@/lib/mailer'
+import { hashToken } from '@/lib/proof'
 import { courses } from '@/data/academyCourses'
 import { getCourseTerms } from '@/lib/courseTerms'
 import { paymentGroups } from '@/data/payment'
@@ -75,6 +76,9 @@ export async function POST(request) {
       console.error('Could not read course fee:', err.message)
     }
 
+    // Payment proof upload ko lagi ek-patak ko secret token (database ma hash matra)
+    const proofToken = randomBytes(24).toString('hex')
+
     // Reference code banaune (duplicate bhayo bhane pheri try)
     let doc = null
     for (let i = 0; i < 3 && !doc; i += 1) {
@@ -95,6 +99,7 @@ export async function POST(request) {
           transactionRef: data.ref,
           remarks: data.remarks,
           agreedToTerms: true,
+          proofTokenHash: hashToken(proofToken),
           ipHash,
         })
       } catch (err) {
@@ -123,7 +128,7 @@ export async function POST(request) {
       ].join('\n'),
     })
 
-    return NextResponse.json({ ok: true, reference: doc.reference })
+    return NextResponse.json({ ok: true, reference: doc.reference, proofToken })
   } catch (err) {
     console.error('Enroll API error:', err.message)
     return NextResponse.json({ error: 'Something went wrong. Please try again later.' }, { status: 500 })

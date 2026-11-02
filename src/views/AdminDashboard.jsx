@@ -259,6 +259,20 @@ export default function AdminDashboard({ email, enrollments: initialEnrollments,
                         </p>
                       )}
                       <p className="text-muted">Transaction ID: {e.transactionRef || '-'}</p>
+                      {e.hasProof ? (
+                        <p>
+                          <a
+                            href={`/api/admin/proof/${e._id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-semibold text-brand hover:underline"
+                          >
+                            View payment proof
+                          </a>
+                        </p>
+                      ) : (
+                        <p className="text-muted">No payment proof uploaded</p>
+                      )}
                       {e.remarks && <p className="text-muted">Remarks: {e.remarks}</p>}
                     </div>
                   </div>

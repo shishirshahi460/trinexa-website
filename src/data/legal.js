@@ -8,7 +8,7 @@ export const legal = {
     sections: [
       {
         title: 'Information you give us',
-        text: 'When you use our contact form, you may give us your name, mobile number, email address and a description of your project. When you enroll in a course, you give us your name, email, mobile number, address, college (optional), the course you choose, your payment method, amount and transaction ID. You choose what to share.',
+        text: 'When you use our contact form, you may give us your name, mobile number, email address and a description of your project. When you enroll in a course, you give us your name, email, mobile number, address, college (optional), the course you choose, your payment method, amount and transaction ID. If you choose to upload a payment proof, we store that file privately so that our team can check your payment. You choose what to share.',
       },
       {
         title: 'How the contact form works',

@@ -23,6 +23,7 @@ const toEnrollment = (d) => ({
   amount: d.amount,
   expectedFee: d.expectedFee ?? null,
   transactionRef: d.transactionRef ?? '',
+  hasProof: Boolean(d.proof?.publicId),
   remarks: d.remarks ?? '',
   status: d.status,
   createdAt: iso(d.createdAt),

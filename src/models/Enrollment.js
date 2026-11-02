@@ -23,6 +23,17 @@ const EnrollmentSchema = new mongoose.Schema(
       default: 'pending',
     },
     ipHash: { type: String, index: true },
+
+    // Payment proof upload
+    proofTokenHash: { type: String, select: false }, // student ko secret token ko hash
+    proofUploads: { type: Number, default: 0 },
+    proof: {
+      publicId: String,
+      resourceType: String,
+      format: String,
+      bytes: Number,
+      uploadedAt: Date,
+    },
   },
   { timestamps: true },
 )
