@@ -19,8 +19,8 @@ export const legal = {
         text: 'We use the details you send to reply to your enquiry and to discuss your project. We do not sell your information.',
       },
       {
-        title: 'Cookies and tracking',
-        text: 'At the time of writing, this website does not use advertising cookies or analytics tools. If we add them later, we will update this policy.',
+        title: 'Cookies and website statistics',
+        text: 'We do not use advertising cookies. To understand how our website is used, we count visits without cookies. For each page view we keep the page address, your country and city (estimated from your network), device type, browser, and the website that sent you here. We do not store your IP address. A one-way scrambled code that changes every day is used only to count each visitor once per day. We do not track visitors who send a Do Not Track signal. This data is deleted automatically after 400 days.',
       },
       {
         title: 'Third-party links and services',

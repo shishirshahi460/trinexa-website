@@ -1,8 +1,6 @@
 import { Inter, Poppins } from 'next/font/google'
 import './globals.css'
-import Navbar from '@/components/Navbar'
-import Footer from '@/components/Footer'
-import WhatsAppButton from '@/components/WhatsAppButton'
+import SiteChrome from '@/components/SiteChrome'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
 const poppins = Poppins({
@@ -35,10 +33,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" data-scroll-behavior="smooth" className={`${inter.variable} ${poppins.variable}`}>
       <body>
-        <Navbar />
-        <main>{children}</main>
-        <Footer />
-        <WhatsAppButton />
+        <SiteChrome>{children}</SiteChrome>
       </body>
     </html>
   )

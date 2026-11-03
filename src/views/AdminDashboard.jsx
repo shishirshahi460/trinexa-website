@@ -50,12 +50,12 @@ function StatusSelect({ value, options, disabled, onChange }) {
   )
 }
 
-export default function AdminDashboard({ email, enrollments: initialEnrollments, enquiries: initialEnquiries }) {
+export default function AdminDashboard({ email, enrollments: initialEnrollments, enquiries: initialEnquiries, initialQuery = '' }) {
   const router = useRouter()
   const [tab, setTab] = useState('enrollments')
   const [enrollments, setEnrollments] = useState(initialEnrollments)
   const [enquiries, setEnquiries] = useState(initialEnquiries)
-  const [query, setQuery] = useState('')
+    const [query, setQuery] = useState(initialQuery)
   const [statusFilter, setStatusFilter] = useState('all')
   const [busy, setBusy] = useState('')
   const [error, setError] = useState('')
