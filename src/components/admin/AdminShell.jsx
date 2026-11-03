@@ -3,19 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import {
-  LayoutDashboard,
-  Inbox,
-  GraduationCap,
-  FileText,
-  Globe,
-  Download,
-  LogOut,
-  Menu,
-  X,
-  Search,
-  ExternalLink,
-} from 'lucide-react'
+import { LayoutDashboard, Inbox, GraduationCap, FileText, Globe, Download, LogOut, Menu, X, ExternalLink } from 'lucide-react'
 import Logo from '../Logo.jsx'
 
 const nav = [
@@ -31,7 +19,6 @@ export default function AdminShell({ email, children }) {
   const pathname = usePathname()
   const router = useRouter()
   const [open, setOpen] = useState(false)
-  const [q, setQ] = useState('')
 
   const isActive = (href) => (href === '/admin' ? pathname === '/admin' : pathname.startsWith(href))
 
@@ -39,12 +26,6 @@ export default function AdminShell({ email, children }) {
     await fetch('/api/admin/logout', { method: 'POST' })
     router.push('/admin/login')
     router.refresh()
-  }
-
-  const search = (e) => {
-    e.preventDefault()
-    router.push(`/admin/records?q=${encodeURIComponent(q.trim())}`)
-    setOpen(false)
   }
 
   return (
@@ -110,7 +91,7 @@ export default function AdminShell({ email, children }) {
 
       {/* Main */}
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-line bg-white/90 px-4 backdrop-blur sm:px-6">
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-line bg-white/90 px-4 backdrop-blur sm:px-6">
           <button
             type="button"
             className="inline-flex size-10 items-center justify-center rounded-lg text-forest lg:hidden"
@@ -119,20 +100,8 @@ export default function AdminShell({ email, children }) {
           >
             <Menu size={22} />
           </button>
-
-          <form onSubmit={search} className="relative max-w-md flex-1">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" aria-hidden="true" />
-            <input
-              type="search"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Search students, enquiries..."
-              aria-label="Search records"
-              className="w-full rounded-lg border border-line bg-[#F4F8F3] py-2.5 pl-10 pr-4 text-sm text-forest placeholder:text-muted focus:border-brand"
-            />
-          </form>
-
-          <span className="ml-auto hidden text-sm text-muted sm:inline">{email}</span>
+          <p className="text-sm font-semibold text-forest">Admin panel</p>
+          <span className="ml-auto truncate text-sm text-muted">{email}</span>
         </header>
 
         {children}
